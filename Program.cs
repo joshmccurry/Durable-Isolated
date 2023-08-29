@@ -1,3 +1,4 @@
+using DurableIsolated;
 using Microsoft.DurableTask.Client;
 using Microsoft.DurableTask.Worker;
 using Microsoft.Extensions.Configuration;
@@ -18,7 +19,9 @@ var builder = new HostBuilder();
 ///     <item><description>Function execution middleware.</description></item>
 ///     <item><description>Default gRPC support.</description></item>
 /// </list>
-builder.ConfigureFunctionsWorkerDefaults();
+builder.ConfigureFunctionsWorkerDefaults(worker => {
+        worker.UseMiddleware<CustomDurableMiddleware>();
+    });
 builder.ConfigureLogging(logging => {
     logging.AddApplicationInsights();
     logging.AddFilter<ApplicationInsightsLoggerProvider>("", LogLevel.Information);
