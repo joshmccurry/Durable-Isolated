@@ -40,14 +40,19 @@ namespace DurableIsolated {
             string[] payload) {
             
             _logger.LogInformation("Starting orchestration with instance ID = {instanceId}", context.InstanceId);
+
+            List<Task> tasks = new List<Task>();
+
             foreach (string name in payload) {
                 _logger.LogInformation("Starting activity for name = {name}", name);
-                string response = await context.CallActivityAsync<string>(nameof(HelloCities), name);
+                tasks.Add(context.CallActivityAsync<string>(nameof(HelloCities), name)); //Fan Out
             }
+
+            await Task.WhenAll(tasks); //Fan In
         }
 
         [Function(nameof(HelloCities))]
-        public string HelloCities([ActivityTrigger] string cityName, FunctionContext executionContext) {
+        public async Task<string> HelloCities([ActivityTrigger] string cityName, FunctionContext executionContext) {
             _logger.LogInformation("Saying hello to {name}", cityName);
             return $"Hello, {cityName}!";
         }
